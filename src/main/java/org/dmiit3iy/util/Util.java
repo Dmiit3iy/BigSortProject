@@ -23,35 +23,25 @@ public class Util {
             }
             double originalFileSize = originalFile.length() / (1024 * 1024);
             System.out.println("Размер файла: " + originalFileSize + "mb");
-            StringBuilder stringBuilder = new StringBuilder();
             try (BufferedReader bufferedReader = new BufferedReader(new FileReader(originalFile.getAbsolutePath()))) {
-                while (bufferedReader.ready()) {
-                    if (stringBuilder.length() < fileSize * (1024 * 1024)) {
-                        stringBuilder.append(bufferedReader.readLine());
-                        stringBuilder.append("\n");
-                    } else {
-                        try (BufferedWriter bufferedWriter = new BufferedWriter(
-                                new FileWriter(originalFile.getParent() + "\\" + fileCount + "." + ext))) {
-                            bufferedWriter.write(stringBuilder.toString());
-                            //очистка стринг билдера
-                            stringBuilder.setLength(0);
-                            fileCount++;
+                while (true) {
+                    File partFile = new File(originalFile.getParent() + "\\" + fileCount + "." + ext);
+                    try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(partFile, true))) {
+                        while ((partFile.length()) < (fileSize * 1048576)) {
+                            if (bufferedReader.ready()) {
+                                bufferedWriter.write(bufferedReader.readLine());
+                                bufferedWriter.newLine();
+                            } else {
+                                return true;
+                            }
                         }
-                    }
-                }
-                if (stringBuilder.length() != 0) {
-                    try (BufferedWriter bufferedWriter = new BufferedWriter(
-                            new FileWriter(originalFile.getParent() + "\\" + fileCount + "." + ext))) {
-                        bufferedWriter.write(stringBuilder.toString());
-                        //очистка стринг билдера
-                        stringBuilder.setLength(0);
+                        fileCount++;
                     }
                 }
             }
-            return true;
         }
         return false;
     }
-
-
 }
+
+
